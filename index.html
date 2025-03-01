@@ -16,9 +16,9 @@
     }
 
     .container {
-      width: 90%;
+      width: 95%;
       max-width: 900px;
-      margin: 30px 0;
+      margin: 20px;
       background: rgba(0, 0, 0, 0.85);
       padding: 20px;
       border-radius: 15px;
@@ -213,14 +213,6 @@
       updatePortfolio();
     }
 
-    function editCrypto(index) {
-      const crypto = portfolio[index];
-      document.getElementById('cryptoName').value = crypto.name;
-      document.getElementById('avgPrice').value = crypto.avgPrice;
-      document.getElementById('quantity').value = crypto.quantity;
-      portfolio.splice(index, 1);
-    }
-
     async function updatePortfolio() {
       await fetchPrices();
       document.getElementById('portfolioTable').innerHTML = "";
@@ -243,11 +235,8 @@
             <td>$${cost.toFixed(2)}</td>
             <td>$${currentPrice.toFixed(2)}</td>
             <td>$${value.toFixed(2)}</td>
-            <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">$${profit.toFixed(2)}</td>
-            <td>
-              <button onclick="editCrypto(${index})">Edit</button>
-              <button onclick="deleteCrypto(${index})">Delete</button>
-            </td>
+            <td>${profit.toFixed(2)}</td>
+            <td><button onclick="deleteCrypto(${index})">Delete</button></td>
           </tr>
         `;
       });
