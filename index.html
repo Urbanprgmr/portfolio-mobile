@@ -110,6 +110,9 @@
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
       padding: 15px;
+      width: 80%; /* Reduced chart container width */
+      margin-left: auto;
+      margin-right: auto;
     }
     canvas {
       max-width: 100%;
@@ -177,23 +180,17 @@
     </table>
 
     <h2>Price Targets</h2>
-    <div class="form-group">
-      <label for="target1">Target 1 (X):</label>
-      <input type="number" id="target1" class="target-input" min="1" max="1000" value="2">
-      <label for="target2">Target 2 (X):</label>
-      <input type="number" id="target2" class="target-input" min="1" max="1000" value="5">
-      <label for="target3">Target 3 (X):</label>
-      <input type="number" id="target3" class="target-input" min="1" max="1000" value="10">
-      <button onclick="updateTargets()">Update Targets</button>
-    </div>
     <table id="priceTargetsTable">
       <thead>
         <tr>
           <th>Crypto</th>
+          <th>Target 1 (X)</th>
           <th>Target 1 Profit USD</th>
           <th>Target 1 Profit %</th>
+          <th>Target 2 (X)</th>
           <th>Target 2 Profit USD</th>
           <th>Target 2 Profit %</th>
+          <th>Target 3 (X)</th>
           <th>Target 3 Profit USD</th>
           <th>Target 3 Profit %</th>
         </tr>
@@ -209,6 +206,9 @@
     </div>
 
     <div class="totals">
+      <h3>Total Cost of All Tokens</h3>
+      <p id="totalCost">$0.00</p>
+
       <h3>Total USD Value of All Tokens</h3>
       <p id="totalUsdValue">$0.00</p>
 
@@ -267,7 +267,6 @@
 
     let portfolio = [];
     let editIndex = null;
-    let targetMultiples = [2, 5, 10]; // Default target multiples
 
     // Load portfolio from localStorage
     function loadPortfolio() {
@@ -302,7 +301,7 @@
         return;
       }
 
-      portfolio.push({ name: cryptoName, avgPrice, quantity });
+      portfolio.push({ name: cryptoName, avgPrice, quantity, targets: [2, 5, 10] }); // Default targets
       document.getElementById('cryptoName').value = '';
       document.getElementById('avgPrice').value = '';
       document.getElementById('quantity').value = '';
@@ -322,7 +321,7 @@
         return;
       }
 
-      portfolio[editIndex] = { name: cryptoName, avgPrice, quantity };
+      portfolio[editIndex] = { name: cryptoName, avgPrice, quantity, targets: portfolio[editIndex].targets }; // Preserve targets
       document.getElementById('cryptoName').value = '';
       document.getElementById('avgPrice').value = '';
       document.getElementById('quantity').value = '';
@@ -351,13 +350,10 @@
       editIndex = index;
     }
 
-    // Update target multiples
-    function updateTargets() {
-      targetMultiples = [
-        parseInt(document.getElementById('target1').value),
-        parseInt(document.getElementById('target2').value),
-        parseInt(document.getElementById('target3').value)
-      ];
+    // Update individual token targets
+    function updateTokenTargets(index, target1, target2, target3) {
+      portfolio[index].targets = [target1, target2, target3];
+      savePortfolio();
       updatePortfolio();
     }
 
@@ -400,10 +396,14 @@
           plugins: {
             legend: {
               position: 'top',
+              labels: {
+                color: '#fff', // Change font color of token names to white
+              }
             },
             title: {
               display: true,
-              text: 'Portfolio Distribution by USD Value'
+              text: 'Portfolio Distribution by USD Value',
+              color: '#fff', // Change title font color to white
             }
           }
         }
@@ -465,25 +465,28 @@
         usdValueTableBody.innerHTML += usdValueRow;
 
         // Price Targets Table
-        const target1Price = crypto.avgPrice * targetMultiples[0];
+        const target1Price = crypto.avgPrice * crypto.targets[0];
         const target1ProfitUSD = (target1Price - crypto.avgPrice) * crypto.quantity;
         const target1ProfitPercentage = ((target1Price - crypto.avgPrice) / crypto.avgPrice) * 100;
 
-        const target2Price = crypto.avgPrice * targetMultiples[1];
+        const target2Price = crypto.avgPrice * crypto.targets[1];
         const target2ProfitUSD = (target2Price - crypto.avgPrice) * crypto.quantity;
         const target2ProfitPercentage = ((target2Price - crypto.avgPrice) / crypto.avgPrice) * 100;
 
-        const target3Price = crypto.avgPrice * targetMultiples[2];
+        const target3Price = crypto.avgPrice * crypto.targets[2];
         const target3ProfitUSD = (target3Price - crypto.avgPrice) * crypto.quantity;
         const target3ProfitPercentage = ((target3Price - crypto.avgPrice) / crypto.avgPrice) * 100;
 
         const priceTargetsRow = `
           <tr>
             <td>${crypto.name.toUpperCase()}</td>
+            <td><input type="number" value="${crypto.targets[0]}" onchange="updateTokenTargets(${index}, this.value, ${crypto.targets[1]}, ${crypto.targets[2]})" class="target-input" min="1" max="1000"></td>
             <td class="profit-positive">$${target1ProfitUSD.toFixed(2)}</td>
             <td class="profit-positive">${target1ProfitPercentage.toFixed(2)}%</td>
+            <td><input type="number" value="${crypto.targets[1]}" onchange="updateTokenTargets(${index}, ${crypto.targets[0]}, this.value, ${crypto.targets[2]})" class="target-input" min="1" max="1000"></td>
             <td class="profit-positive">$${target2ProfitUSD.toFixed(2)}</td>
             <td class="profit-positive">${target2ProfitPercentage.toFixed(2)}%</td>
+            <td><input type="number" value="${crypto.targets[2]}" onchange="updateTokenTargets(${index}, ${crypto.targets[0]}, ${crypto.targets[1]}, this.value)" class="target-input" min="1" max="1000"></td>
             <td class="profit-positive">$${target3ProfitUSD.toFixed(2)}</td>
             <td class="profit-positive">${target3ProfitPercentage.toFixed(2)}%</td>
           </tr>
@@ -501,6 +504,7 @@
       const totalProfitLossPercentage = ((totalCurrentValue - totalInvestment) / totalInvestment) * 100;
 
       // Update Totals
+      document.getElementById('totalCost').textContent = `$${totalInvestment.toFixed(2)}`;
       document.getElementById('totalUsdValue').textContent = `$${totalUsdValue.toFixed(2)}`;
       document.getElementById('totalProfitLossUsd').textContent = `$${totalProfitLossUsd.toFixed(2)}`;
       document.getElementById('totalProfitLossPercentage').textContent = `${totalProfitLossPercentage.toFixed(2)}%`;
