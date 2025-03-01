@@ -242,9 +242,14 @@
 
     // Update multipliers for a crypto
     function updateMultiplier(index, targetIndex, value) {
-      portfolio[index].targetMultipliers[targetIndex] = parseFloat(value);
-      savePortfolio();
-      updatePortfolio();
+      const newValue = parseFloat(value);
+      if (!isNaN(newValue)) {
+        portfolio[index].targetMultipliers[targetIndex] = newValue;
+        savePortfolio();
+        updatePortfolio();
+      } else {
+        alert('Invalid input. Please enter a valid number.');
+      }
     }
 
     // Update the portfolio table and totals
