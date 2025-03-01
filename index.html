@@ -174,6 +174,33 @@
       </tbody>
     </table>
 
+    <h2>Price Targets</h2>
+    <div class="form-group">
+      <label for="target1">Target 1 (X):</label>
+      <input type="number" id="target1" class="target-input" min="1" max="1000" value="2">
+      <label for="target2">Target 2 (X):</label>
+      <input type="number" id="target2" class="target-input" min="1" max="1000" value="5">
+      <label for="target3">Target 3 (X):</label>
+      <input type="number" id="target3" class="target-input" min="1" max="1000" value="10">
+      <button onclick="updateTargets()">Update Targets</button>
+    </div>
+    <table id="priceTargetsTable">
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>Target 1 Profit USD</th>
+          <th>Target 1 Profit %</th>
+          <th>Target 2 Profit USD</th>
+          <th>Target 2 Profit %</th>
+          <th>Target 3 Profit USD</th>
+          <th>Target 3 Profit %</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be added here dynamically -->
+      </tbody>
+    </table>
+
     <div class="chart-container">
       <h2>Portfolio Distribution by USD Value</h2>
       <canvas id="portfolioPieChart"></canvas>
@@ -234,6 +261,7 @@
 
     let portfolio = [];
     let editIndex = null;
+    let targetMultiples = [2, 5, 10]; // Default target multiples
 
     // Load portfolio from localStorage
     function loadPortfolio() {
@@ -317,6 +345,16 @@
       editIndex = index;
     }
 
+    // Update target multiples
+    function updateTargets() {
+      targetMultiples = [
+        parseInt(document.getElementById('target1').value),
+        parseInt(document.getElementById('target2').value),
+        parseInt(document.getElementById('target3').value)
+      ];
+      updatePortfolio();
+    }
+
     // Function to update charts
     function updateCharts() {
       const portfolioPieChartCtx = document.getElementById('portfolioPieChart').getContext('2d');
@@ -372,9 +410,11 @@
 
       const portfolioTableBody = document.querySelector('#portfolioTable tbody');
       const usdValueTableBody = document.querySelector('#usdValueTable tbody');
+      const priceTargetsTableBody = document.querySelector('#priceTargetsTable tbody');
 
       portfolioTableBody.innerHTML = '';
       usdValueTableBody.innerHTML = '';
+      priceTargetsTableBody.innerHTML = '';
 
       let totalUsdValue = 0;
 
@@ -408,6 +448,32 @@
           </tr>
         `;
         usdValueTableBody.innerHTML += usdValueRow;
+
+        // Price Targets Table
+        const target1Price = crypto.avgPrice * targetMultiples[0];
+        const target1ProfitUSD = (target1Price - crypto.avgPrice) * crypto.quantity;
+        const target1ProfitPercentage = ((target1Price - crypto.avgPrice) / crypto.avgPrice) * 100;
+
+        const target2Price = crypto.avgPrice * targetMultiples[1];
+        const target2ProfitUSD = (target2Price - crypto.avgPrice) * crypto.quantity;
+        const target2ProfitPercentage = ((target2Price - crypto.avgPrice) / crypto.avgPrice) * 100;
+
+        const target3Price = crypto.avgPrice * targetMultiples[2];
+        const target3ProfitUSD = (target3Price - crypto.avgPrice) * crypto.quantity;
+        const target3ProfitPercentage = ((target3Price - crypto.avgPrice) / crypto.avgPrice) * 100;
+
+        const priceTargetsRow = `
+          <tr>
+            <td>${crypto.name.toUpperCase()}</td>
+            <td class="profit-positive">$${target1ProfitUSD.toFixed(2)}</td>
+            <td class="profit-positive">${target1ProfitPercentage.toFixed(2)}%</td>
+            <td class="profit-positive">$${target2ProfitUSD.toFixed(2)}</td>
+            <td class="profit-positive">${target2ProfitPercentage.toFixed(2)}%</td>
+            <td class="profit-positive">$${target3ProfitUSD.toFixed(2)}</td>
+            <td class="profit-positive">${target3ProfitPercentage.toFixed(2)}%</td>
+          </tr>
+        `;
+        priceTargetsTableBody.innerHTML += priceTargetsRow;
       });
 
       // Update Totals
