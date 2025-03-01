@@ -1,26 +1,46 @@
 // script.js
 document.addEventListener("DOMContentLoaded", function () {
-    const cryptoName = document.getElementById("cryptoName");
-    const cryptoSymbol = document.getElementById("cryptoSymbol");
+    const cryptoSearch = document.getElementById("cryptoSearch");
+    const cryptoSelect = document.getElementById("cryptoSelect");
     const cryptoQuantity = document.getElementById("cryptoQuantity");
     const cryptoCost = document.getElementById("cryptoCost");
     const addCryptoBtn = document.getElementById("addCryptoBtn");
     const portfolioTable = document.getElementById("portfolioTable").getElementsByTagName("tbody")[0];
+    const priceTargetsContainer = document.getElementById("priceTargetsContainer");
 
-    // Load portfolio from local storage
-    loadPortfolio();
+    let allCryptos = [];
+
+    // Fetch all cryptocurrencies from CoinGecko API
+    async function fetchAllCryptos() {
+        try {
+            const response = await fetch("https://api.coingecko.com/api/v3/coins/list");
+            allCryptos = await response.json();
+            populateCryptoSelect(allCryptos);
+        } catch (error) {
+            console.error("Error fetching cryptos:", error);
+        }
+    }
+
+    // Populate the crypto select dropdown
+    function populateCryptoSelect(cryptos) {
+        cryptos.forEach(crypto => {
+            const option = document.createElement("option");
+            option.value = crypto.id;
+            option.textContent = `${crypto.name} (${crypto.symbol.toUpperCase()})`;
+            cryptoSelect.appendChild(option);
+        });
+    }
 
     // Add crypto to portfolio
     addCryptoBtn.addEventListener("click", function () {
-        const name = cryptoName.value.trim();
-        const symbol = cryptoSymbol.value.trim().toUpperCase();
+        const cryptoId = cryptoSelect.value;
         const quantity = parseFloat(cryptoQuantity.value);
         const cost = parseFloat(cryptoCost.value);
 
-        if (name && symbol && quantity && cost) {
-            addCryptoToPortfolio(name, symbol, quantity, cost);
-            cryptoName.value = "";
-            cryptoSymbol.value = "";
+        if (cryptoId && quantity && cost) {
+            const crypto = allCryptos.find(c => c.id === cryptoId);
+            addCryptoToPortfolio(crypto.name, crypto.symbol.toUpperCase(), quantity, cost);
+            cryptoSelect.value = "";
             cryptoQuantity.value = "";
             cryptoCost.value = "";
             savePortfolio();
@@ -174,4 +194,8 @@ document.addEventListener("DOMContentLoaded", function () {
             addCryptoToPortfolio(crypto.name, crypto.symbol, crypto.quantity, crypto.cost);
         });
     }
+
+    // Initialize
+    fetchAllCryptos();
+    loadPortfolio();
 });
