@@ -1,0 +1,146 @@
+/* styles.css */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #1e1e2f;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    background: #2a2a40;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #00d1b2;
+}
+
+.form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.form input {
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 16px;
+    background: #333;
+    color: #fff;
+    width: calc(25% - 10px);
+}
+
+.form button {
+    padding: 10px 20px;
+    background-color: #00d1b2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.form button:hover {
+    background-color: #009e87;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #444;
+}
+
+th {
+    background-color: #00d1b2;
+    color: white;
+}
+
+tr:hover {
+    background-color: #3a3a50;
+}
+
+.editBtn, .deleteBtn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 2px;
+}
+
+.editBtn {
+    background-color: #3273dc;
+    color: white;
+}
+
+.editBtn:hover {
+    background-color: #276cda;
+}
+
+.deleteBtn {
+    background-color: #ff3860;
+    color: white;
+}
+
+.deleteBtn:hover {
+    background-color: #ff1c4a;
+}
+
+.price-targets {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.price-target {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.price-target input {
+    width: 60px;
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    background: #333;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .form input {
+        width: calc(50% - 10px);
+    }
+
+    table {
+        font-size: 14px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+}
