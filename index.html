@@ -90,21 +90,6 @@
       color: #f44336;
     }
 
-    .chart-container {
-      margin-top: 30px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 20px;
-    }
-
-    canvas {
-      max-width: 100%;
-    }
-
-    .actions button {
-      margin: 5px;
-    }
-
     .price-targets input {
       width: 60px;
       text-align: center;
@@ -155,10 +140,20 @@
       <tbody id="portfolioTable"></tbody>
     </table>
 
-    <div class="chart-container">
-      <h2>Portfolio Distribution</h2>
-      <canvas id="portfolioPieChart"></canvas>
-    </div>
+    <h2>Price Targets</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>Multiplier 1</th>
+          <th>Multiplier 2</th>
+          <th>Multiplier 3</th>
+          <th>Projected Profit</th>
+        </tr>
+      </thead>
+      <tbody id="priceTargetTable"></tbody>
+    </table>
+
   </div>
 
   <script>
@@ -168,14 +163,7 @@
       tether: 'tether',
       xrp: 'ripple',
       binancecoin: 'binancecoin',
-      solana: 'solana',
-      gala: "gala",
-      alpaca: "alpaca-finance",
-      dogs: "dogs-2",
-      cookie: "cookie",
-      render: "render-token",
-      pi: "pi-network"
-      
+      solana: 'solana'
     };
 
     const cryptos = Object.keys(cryptoIdMap);
@@ -201,6 +189,7 @@
     async function updatePortfolio() {
       await fetchPrices();
       document.getElementById('portfolioTable').innerHTML = "";
+      document.getElementById('priceTargetTable').innerHTML = "";
       let totalCost = 0, totalValue = 0, totalProfit = 0;
 
       portfolio.forEach((crypto, index) => {
@@ -221,9 +210,17 @@
             <td>$${currentPrice.toFixed(2)}</td>
             <td>$${value.toFixed(2)}</td>
             <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">$${profit.toFixed(2)}</td>
-            <td>
-              <button onclick="deleteCrypto(${index})">Delete</button>
-            </td>
+            <td><button onclick="deleteCrypto(${index})">Delete</button></td>
+          </tr>
+        `;
+
+        document.getElementById('priceTargetTable').innerHTML += `
+          <tr>
+            <td>${crypto.name.toUpperCase()}</td>
+            <td><input type="number" min="1" max="1000" value="2"></td>
+            <td><input type="number" min="1" max="1000" value="5"></td>
+            <td><input type="number" min="1" max="1000" value="10"></td>
+            <td>$${(value * 2).toFixed(2)}</td>
           </tr>
         `;
       });
@@ -231,18 +228,7 @@
       document.getElementById('totalCost').textContent = `$${totalCost.toFixed(2)}`;
       document.getElementById('totalPortfolioValue').textContent = `$${totalValue.toFixed(2)}`;
       document.getElementById('totalProfitLoss').textContent = `$${totalProfit.toFixed(2)}`;
-
-      localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
     }
-
-    document.getElementById('addCryptoButton').addEventListener('click', () => {
-      const cryptoName = document.getElementById('cryptoName').value;
-      const avgPrice = parseFloat(document.getElementById('avgPrice').value);
-      const quantity = parseFloat(document.getElementById('quantity').value);
-
-      portfolio.push({ name: cryptoName, avgPrice, quantity });
-      updatePortfolio();
-    });
 
     populateCryptoDropdown();
     updatePortfolio();
