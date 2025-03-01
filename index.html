@@ -163,7 +163,7 @@
       tether: 'tether',
       xrp: 'ripple',
       binancecoin: 'binancecoin',
-      solana: 'solana'
+      solana: 'solana',
       gala: "gala",
       alpaca: "alpaca-finance",
       dogs: "dogs-2",
@@ -192,10 +192,31 @@
       prices = await response.json();
     }
 
+    function savePortfolio() {
+      localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+    }
+
+    function addCrypto() {
+      const cryptoName = document.getElementById('cryptoName').value;
+      const avgPrice = parseFloat(document.getElementById('avgPrice').value);
+      const quantity = parseFloat(document.getElementById('quantity').value);
+
+      if (!cryptoName || isNaN(avgPrice) || isNaN(quantity)) return;
+
+      portfolio.push({ name: cryptoName, avgPrice, quantity, targetMultipliers: [2, 5, 10] });
+      savePortfolio();
+      updatePortfolio();
+    }
+
+    function deleteCrypto(index) {
+      portfolio.splice(index, 1);
+      savePortfolio();
+      updatePortfolio();
+    }
+
     async function updatePortfolio() {
       await fetchPrices();
       document.getElementById('portfolioTable').innerHTML = "";
-      document.getElementById('priceTargetTable').innerHTML = "";
       let totalCost = 0, totalValue = 0, totalProfit = 0;
 
       portfolio.forEach((crypto, index) => {
@@ -219,23 +240,12 @@
             <td><button onclick="deleteCrypto(${index})">Delete</button></td>
           </tr>
         `;
-
-        document.getElementById('priceTargetTable').innerHTML += `
-          <tr>
-            <td>${crypto.name.toUpperCase()}</td>
-            <td><input type="number" min="1" max="1000" value="2"></td>
-            <td><input type="number" min="1" max="1000" value="5"></td>
-            <td><input type="number" min="1" max="1000" value="10"></td>
-            <td>$${(value * 2).toFixed(2)}</td>
-          </tr>
-        `;
       });
 
-      document.getElementById('totalCost').textContent = `$${totalCost.toFixed(2)}`;
-      document.getElementById('totalPortfolioValue').textContent = `$${totalValue.toFixed(2)}`;
-      document.getElementById('totalProfitLoss').textContent = `$${totalProfit.toFixed(2)}`;
+      savePortfolio();
     }
 
+    document.getElementById('addCryptoButton').addEventListener('click', addCrypto);
     populateCryptoDropdown();
     updatePortfolio();
   </script>
