@@ -8,18 +8,28 @@
 </head>
 <body>
     <div class="container">
+        <!-- Header Section -->
         <header>
             <h1>Crypto Portfolio Manager</h1>
+        </header>
+
+        <!-- Add Crypto Section -->
+        <section class="add-crypto">
+            <h2>Add Crypto</h2>
             <div class="form">
-                <input type="text" id="cryptoName" placeholder="Crypto Name (e.g., Bitcoin)">
-                <input type="text" id="cryptoSymbol" placeholder="Symbol (e.g., BTC)">
+                <input type="text" id="cryptoSearch" placeholder="Search Crypto...">
+                <select id="cryptoSelect">
+                    <option value="">Select a Crypto</option>
+                </select>
                 <input type="number" id="cryptoQuantity" placeholder="Quantity">
                 <input type="number" id="cryptoCost" placeholder="Average Cost (USD)">
                 <button id="addCryptoBtn">Add Crypto</button>
             </div>
-        </header>
+        </section>
 
-        <main>
+        <!-- Portfolio Section -->
+        <section class="portfolio">
+            <h2>Portfolio</h2>
             <table id="portfolioTable">
                 <thead>
                     <tr>
@@ -38,7 +48,15 @@
                     <!-- Rows will be added dynamically -->
                 </tbody>
             </table>
-        </main>
+        </section>
+
+        <!-- Price Targets Section -->
+        <section class="price-targets">
+            <h2>Price Targets</h2>
+            <div id="priceTargetsContainer">
+                <!-- Price targets will be added dynamically -->
+            </div>
+        </section>
     </div>
 
     <script src="script.js"></script>
