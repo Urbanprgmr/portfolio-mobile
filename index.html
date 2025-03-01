@@ -352,7 +352,7 @@
 
     // Update individual token targets
     function updateTokenTargets(index, target1, target2, target3) {
-      portfolio[index].targets = [target1, target2, target3];
+      portfolio[index].targets = [parseFloat(target1), parseFloat(target2), parseFloat(target3)];
       savePortfolio();
       updatePortfolio();
     }
