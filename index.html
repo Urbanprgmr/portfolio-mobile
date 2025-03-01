@@ -6,7 +6,7 @@
   <title>Crypto Portfolio Manager</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Arial', sans-serif;
       margin: 0;
       padding: 0;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -19,7 +19,7 @@
 
     .container {
       width: 95%;
-      max-width: 900px;
+      max-width: 1200px;
       margin: 20px;
       background: rgba(0, 0, 0, 0.85);
       padding: 20px;
@@ -36,7 +36,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     select, input, button {
@@ -63,7 +63,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
+      margin-top: 20px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
     }
@@ -96,6 +96,10 @@
       text-align: center;
     }
 
+    .chart-container {
+      margin-top: 20px;
+    }
+
     @media (max-width: 768px) {
       table {
         display: block;
@@ -109,6 +113,7 @@
   <div class="container">
     <h1>Crypto Portfolio Manager</h1>
     
+    <!-- Add Crypto Form -->
     <div class="form-group">
       <select id="cryptoName" required>
         <option value="" disabled selected>Select a Crypto</option>
@@ -118,11 +123,13 @@
       <button id="addCryptoButton">Add Crypto</button>
     </div>
 
-    <h2>Total Portfolio</h2>
+    <!-- Portfolio Summary -->
+    <h2>Portfolio Summary</h2>
     <p><strong>Total Cost:</strong> $<span id="totalCost">0.00</span></p>
     <p><strong>Current Value:</strong> $<span id="totalPortfolioValue">0.00</span></p>
     <p><strong>Profit/Loss:</strong> $<span id="totalProfitLoss">0.00</span> (<span id="totalProfitLossPercent">0.00%</span>)</p>
 
+    <!-- Portfolio Table -->
     <h2>Portfolio</h2>
     <table>
       <thead>
@@ -140,6 +147,7 @@
       <tbody id="portfolioTable"></tbody>
     </table>
 
+    <!-- Price Targets Table -->
     <h2>Price Targets</h2>
     <table>
       <thead>
@@ -153,6 +161,11 @@
       </thead>
       <tbody id="priceTargetTable"></tbody>
     </table>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="portfolioChart"></canvas>
+    </div>
   </div>
 
   <script>
@@ -162,13 +175,7 @@
       tether: 'tether',
       xrp: 'ripple',
       binancecoin: 'binancecoin',
-      solana: 'solana',
-      gala: "gala",
-      alpaca: "alpaca-finance",
-      dogs: "dogs-2",
-      cookie: "cookie",
-      render: "render-token",
-      pi: "pi-network"
+      solana: 'solana'
     };
 
     const cryptos = Object.keys(cryptoIdMap);
@@ -323,6 +330,55 @@
         profitLossElement.style.color = '#f44336';
         profitLossPercentElement.style.color = '#f44336';
       }
+
+      // Update chart
+      updateChart();
+    }
+
+    // Update the portfolio chart
+    function updateChart() {
+      const ctx = document.getElementById('portfolioChart').getContext('2d');
+      const labels = portfolio.map(crypto => crypto.name.toUpperCase());
+      const data = portfolio.map(crypto => {
+        const currentPrice = prices[cryptoIdMap[crypto.name]]?.usd || 0;
+        return crypto.quantity * currentPrice;
+      });
+
+      if (window.portfolioChart) {
+        window.portfolioChart.destroy();
+      }
+
+      window.portfolioChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Portfolio Value',
+            data: data,
+            backgroundColor: [
+              '#4caf50', '#ffd700', '#1e3c72', '#f44336', '#2a5298', '#ffc107'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  return `${label}: $${value.toFixed(2)}`;
+                }
+              }
+            }
+          }
+        }
+      });
     }
 
     // Event listeners
