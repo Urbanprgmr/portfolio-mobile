@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Portfolio 2</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 1200px;
+      margin: 20px;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #ffd700;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    select, input, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+
+    button {
+      background: #ffd700;
+      color: #1e3c72;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #ffc107;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.2);
+      font-weight: bold;
+    }
+
+    tr:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .profit-positive {
+      color: #4caf50;
+    }
+
+    .profit-negative {
+      color: #f44336;
+    }
+
+    .price-targets input {
+      width: 60px;
+      text-align: center;
+    }
+
+    .chart-container {
+      margin-top: 20px;
+    }
+
+    @media (max-width: 768px) {
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Crypto Portfolio 2</h1>
+    
+    <!-- Add Crypto Form -->
+    <div class="form-group">
+      <select id="cryptoName" required>
+        <option value="" disabled selected>Select a Crypto</option>
+      </select>
+      <input type="number" step="0.000001" id="avgPrice" placeholder="Average Price" required>
+      <input type="number" step="0.000001" id="quantity" placeholder="Quantity" required>
+      <button id="addCryptoButton">Add Crypto</button>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <h2>Portfolio Summary</h2>
+    <p><strong>Total Cost:</strong> $<span id="totalCost">0.00</span></p>
+    <p><strong>Current Value:</strong> $<span id="totalPortfolioValue">0.00</span></p>
+    <p><strong>Profit/Loss:</strong> $<span id="totalProfitLoss">0.00</span> (<span id="totalProfitLossPercent">0.00%</span>)</p>
+
+    <!-- Portfolio Table -->
+    <h2>Portfolio</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>Quantity</th>
+          <th>Avg Price</th>
+          <th>Cost</th>
+          <th>Current Price</th>
+          <th>Value</th>
+          <th>Profit/Loss</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="portfolioTable"></tbody>
+    </table>
+
+    <!-- Price Targets Table -->
+    <h2>Price Targets</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>Target 1</th>
+          <th>Target 2</th>
+          <th>Target 3</th>
+          <th>Projected Profit</th>
+        </tr>
+      </thead>
+      <tbody id="priceTargetTable"></tbody>
+    </table>
+
+    <!-- Chart -->
+    <div class="chart-container">
+      <canvas id="portfolioChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const cryptoIdMap = {
+      bitcoin: 'bitcoin',
+      ethereum: 'ethereum',
+      tether: 'tether',
+      xrp: 'ripple',
+      binancecoin: 'binancecoin',
+      solana: 'solana'
+    };
+
+    const cryptos = Object.keys(cryptoIdMap);
+    let portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio')) || [];
+    let prices = {};
+
+    // Populate the crypto dropdown
+    function populateCryptoDropdown() {
+      const cryptoDropdown = document.getElementById('cryptoName');
+      cryptos.forEach(crypto => {
+        const option = document.createElement('option');
+        option.value = crypto;
+        option.textContent = crypto.toUpperCase();
+        cryptoDropdown.appendChild(option);
+      });
+    }
+
+    // Fetch current prices from CoinGecko
+    async function fetchPrices() {
+      try {
+        const ids = cryptos.map(crypto => cryptoIdMap[crypto]).join(',');
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+        prices = await response.json();
+      } catch (error) {
+        console.error('Failed to fetch prices:', error);
+      }
+    }
+
+    // Save portfolio to localStorage
+    function savePortfolio() {
+      localStorage.setItem('cryptoPortfolio', JSON.stringify(portfolio));
+    }
+
+    // Add a crypto to the portfolio
+    function addCrypto() {
+      const cryptoName = document.getElementById('cryptoName').value;
+      const avgPrice = parseFloat(document.getElementById('avgPrice').value);
+      const quantity = parseFloat(document.getElementById('quantity').value);
+
+      if (!cryptoName || isNaN(avgPrice) || isNaN(quantity)) {
+        alert('Please fill in all fields correctly.');
+        return;
+      }
+
+      portfolio.push({
+        name: cryptoName,
+        avgPrice,
+        quantity,
+        targetMultipliers: [1.5, 2, 3] // Default multipliers
+      });
+      savePortfolio();
+      updatePortfolio();
+    }
+
+    // Delete a crypto from the portfolio
+    function deleteCrypto(index) {
+      portfolio.splice(index, 1);
+      savePortfolio();
+      updatePortfolio();
+    }
+
+    // Edit a crypto's average price and quantity
+    function editCrypto(index) {
+      const crypto = portfolio[index];
+      const newAvgPrice = parseFloat(prompt('Enter new average price:', crypto.avgPrice));
+      const newQuantity = parseFloat(prompt('Enter new quantity:', crypto.quantity));
+
+      if (!isNaN(newAvgPrice) && !isNaN(newQuantity)) {
+        crypto.avgPrice = newAvgPrice;
+        crypto.quantity = newQuantity;
+        savePortfolio();
+        updatePortfolio();
+      } else {
+        alert('Invalid input. Please enter valid numbers.');
+      }
+    }
+
+    // Update multipliers for a crypto
+    function updateMultiplier(index, targetIndex, value) {
+      const newValue = parseFloat(value);
+      if (!isNaN(newValue)) {
+        portfolio[index].targetMultipliers[targetIndex] = newValue;
+        savePortfolio();
+        updatePortfolio();
+      } else {
+        alert('Invalid input. Please enter a valid number.');
+      }
+    }
+
+    // Update the portfolio table and totals
+    async function updatePortfolio() {
+      await fetchPrices();
+      const portfolioTable = document.getElementById('portfolioTable');
+      const priceTargetTable = document.getElementById('priceTargetTable');
+      portfolioTable.innerHTML = '';
+      priceTargetTable.innerHTML = '';
+
+      let totalCost = 0, totalValue = 0, totalProfit = 0;
+
+      portfolio.forEach((crypto, index) => {
+        const currentPrice = prices[cryptoIdMap[crypto.name]]?.usd || 0;
+        const cost = crypto.quantity * crypto.avgPrice;
+        const value = crypto.quantity * currentPrice;
+        const profit = value - cost;
+        totalCost += cost;
+        totalValue += value;
+        totalProfit += profit;
+
+        // Add row to portfolio table
+        portfolioTable.innerHTML += `
+          <tr>
+            <td>${crypto.name.toUpperCase()}</td>
+            <td>${crypto.quantity.toFixed(6)}</td>
+            <td>$${crypto.avgPrice.toFixed(2)}</td>
+            <td>$${cost.toFixed(2)}</td>
+            <td>$${currentPrice.toFixed(2)}</td>
+            <td>$${value.toFixed(2)}</td>
+            <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">$${profit.toFixed(2)}</td>
+            <td>
+              <button onclick="editCrypto(${index})">Edit</button>
+              <button onclick="deleteCrypto(${index})">Delete</button>
+            </td>
+          </tr>
+        `;
+
+        // Add row to price targets table
+        priceTargetTable.innerHTML += `
+          <tr>
+            <td>${crypto.name.toUpperCase()}</td>
+            <td><input type="number" step="0.1" value="${crypto.targetMultipliers[0]}" onchange="updateMultiplier(${index}, 0, this.value)"></td>
+            <td><input type="number" step="0.1" value="${crypto.targetMultipliers[1]}" onchange="updateMultiplier(${index}, 1, this.value)"></td>
+            <td><input type="number" step="0.1" value="${crypto.targetMultipliers[2]}" onchange="updateMultiplier(${index}, 2, this.value)"></td>
+            <td>$${(crypto.quantity * (currentPrice * crypto.targetMultipliers[2] - crypto.avgPrice)).toFixed(2)}</td>
+          </tr>
+        `;
+      });
+
+      // Update totals
+      const totalProfitPercent = ((totalProfit / totalCost) * 100).toFixed(2);
+      document.getElementById('totalCost').textContent = totalCost.toFixed(2);
+      document.getElementById('totalPortfolioValue').textContent = totalValue.toFixed(2);
+      document.getElementById('totalProfitLoss').textContent = totalProfit.toFixed(2);
+      document.getElementById('totalProfitLossPercent').textContent = `${totalProfitPercent}%`;
+
+      // Colorize total profit/loss
+      const profitLossElement = document.getElementById('totalProfitLoss');
+      const profitLossPercentElement = document.getElementById('totalProfitLossPercent');
+      if (totalProfit >= 0) {
+        profitLossElement.style.color = '#4caf50';
+        profitLossPercentElement.style.color = '#4caf50';
+      } else {
+        profitLossElement.style.color = '#f44336';
+        profitLossPercentElement.style.color = '#f44336';
+      }
+
+      // Update chart
+      updateChart();
+    }
+
+    // Update the portfolio chart
+    function updateChart() {
+      const ctx = document.getElementById('portfolioChart').getContext('2d');
+      const labels = portfolio.map(crypto => crypto.name.toUpperCase());
+      const data = portfolio.map(crypto => {
+        const currentPrice = prices[cryptoIdMap[crypto.name]]?.usd || 0;
+        return crypto.quantity * currentPrice;
+      });
+
+      if (window.portfolioChart) {
+        window.portfolioChart.destroy();
+      }
+
+      window.portfolioChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Portfolio Value',
+            data: data,
+            backgroundColor: [
+              '#4caf50', '#ffd700', '#1e3c72', '#f44336', '#2a5298', '#ffc107'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const label = context.label || '';
+                  const value = context.raw || 0;
+                  return `${label}: $${value.toFixed(2)}`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Event listeners
+    document.getElementById('addCryptoButton').addEventListener('click', addCrypto);
+
+    // Initialize
+    populateCryptoDropdown();
+    updatePortfolio();
+  </script>
+</body>
+</html>
