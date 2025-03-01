@@ -31,7 +31,6 @@
       color: #ffd700;
     }
 
-    /* Styled Form */
     .form-group {
       display: flex;
       flex-direction: column;
@@ -60,14 +59,12 @@
       background: #ffc107;
     }
 
-    /* Table Styling */
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 15px;
       background: rgba(255, 255, 255, 0.1);
       border-radius: 10px;
-      overflow: hidden;
     }
 
     th, td {
@@ -104,7 +101,15 @@
       max-width: 100%;
     }
 
-    /* Responsive Layout */
+    .actions button {
+      margin: 5px;
+    }
+
+    .price-targets input {
+      width: 60px;
+      text-align: center;
+    }
+
     @media (max-width: 768px) {
       table {
         display: block;
@@ -126,10 +131,10 @@
       <input type="number" step="0.000001" id="avgPrice" placeholder="Average Price" required>
       <input type="number" step="0.000001" id="quantity" placeholder="Quantity" required>
       <button id="addCryptoButton">Add Crypto</button>
-      <button id="updateCryptoButton" style="display:none;">Update Crypto</button>
     </div>
 
-    <h2>Total Portfolio Value</h2>
+    <h2>Total Portfolio</h2>
+    <p><strong>Total Cost:</strong> $<span id="totalCost">0.00</span></p>
     <p><strong>Current Value:</strong> $<span id="totalPortfolioValue">0.00</span></p>
     <p><strong>Profit/Loss:</strong> $<span id="totalProfitLoss">0.00</span> (<span id="totalProfitLossPercent">0.00%</span>)</p>
 
@@ -140,8 +145,9 @@
           <th>Crypto</th>
           <th>Quantity</th>
           <th>Avg Price</th>
+          <th>Cost</th>
           <th>Current Price</th>
-          <th>USD Value</th>
+          <th>Value</th>
           <th>Profit/Loss</th>
           <th>Actions</th>
         </tr>
@@ -149,11 +155,24 @@
       <tbody id="portfolioTable"></tbody>
     </table>
 
+    <h2>Price Targets</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>Multiplier 1</th>
+          <th>Multiplier 2</th>
+          <th>Multiplier 3</th>
+          <th>Projected Profit</th>
+        </tr>
+      </thead>
+      <tbody id="priceTargetTable"></tbody>
+    </table>
+
     <div class="chart-container">
       <h2>Portfolio Distribution</h2>
       <canvas id="portfolioPieChart"></canvas>
     </div>
-
   </div>
 
   <script>
@@ -164,16 +183,17 @@
       xrp: 'ripple',
       binancecoin: 'binancecoin',
       solana: 'solana',
-      cardano: 'cardano',
-      dogecoin: 'dogecoin',
-      polygon: 'matic-network',
-      polkadot: 'polkadot'
+      gala: "gala",
+      alpaca: "alpaca-finance",
+      dogs: "dogs-2",
+      cookie: "cookie",
+      render: "render-token",
+      pi: "pi-network"
     };
 
     const cryptos = Object.keys(cryptoIdMap);
-    let portfolio = JSON.parse(localStorage.getItem('cryptoPortfolio')) || [];
+    let portfolio = [];
     let prices = {};
-    let editIndex = null;
 
     function populateCryptoDropdown() {
       const cryptoDropdown = document.getElementById('cryptoName');
@@ -194,43 +214,39 @@
     async function updatePortfolio() {
       await fetchPrices();
       document.getElementById('portfolioTable').innerHTML = "";
+      let totalCost = 0, totalValue = 0, totalProfit = 0;
 
       portfolio.forEach((crypto, index) => {
         const currentPrice = prices[cryptoIdMap[crypto.name]]?.usd || 0;
-        const usdValue = crypto.quantity * currentPrice;
-        const profitLossUSD = usdValue - (crypto.quantity * crypto.avgPrice);
-        const profitLossPercentage = ((usdValue - (crypto.quantity * crypto.avgPrice)) / (crypto.quantity * crypto.avgPrice)) * 100;
+        const cost = crypto.quantity * crypto.avgPrice;
+        const value = crypto.quantity * currentPrice;
+        const profit = value - cost;
+        totalCost += cost;
+        totalValue += value;
+        totalProfit += profit;
 
         document.getElementById('portfolioTable').innerHTML += `
           <tr>
             <td>${crypto.name.toUpperCase()}</td>
             <td>${crypto.quantity}</td>
-            <td>$${crypto.avgPrice.toFixed(6)}</td>
+            <td>$${crypto.avgPrice.toFixed(2)}</td>
+            <td>$${cost.toFixed(2)}</td>
             <td>$${currentPrice.toFixed(2)}</td>
-            <td>$${usdValue.toFixed(2)}</td>
-            <td class="${profitLossUSD >= 0 ? 'profit-positive' : 'profit-negative'}">
-              $${profitLossUSD.toFixed(2)} (${profitLossPercentage.toFixed(2)}%)
-            </td>
-            <td><button onclick="editCrypto(${index})">Edit</button></td>
+            <td>$${value.toFixed(2)}</td>
+            <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">$${profit.toFixed(2)}</td>
+            <td><button onclick="deleteCrypto(${index})">Delete</button></td>
           </tr>
         `;
       });
 
-      updateCharts();
+      document.getElementById('totalCost').textContent = `$${totalCost.toFixed(2)}`;
+      document.getElementById('totalPortfolioValue').textContent = `$${totalValue.toFixed(2)}`;
+      document.getElementById('totalProfitLoss').textContent = `$${totalProfit.toFixed(2)}`;
     }
 
-    function updateCharts() {
-      const ctx = document.getElementById('portfolioPieChart').getContext('2d');
-      new Chart(ctx, {
-        type: 'pie',
-        data: {
-          labels: portfolio.map(c => c.name.toUpperCase()),
-          datasets: [{
-            data: portfolio.map(c => c.quantity * prices[cryptoIdMap[c.name]]?.usd || 0),
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
-          }]
-        }
-      });
+    function deleteCrypto(index) {
+      portfolio.splice(index, 1);
+      updatePortfolio();
     }
 
     populateCryptoDropdown();
