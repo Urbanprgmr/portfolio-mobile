@@ -153,6 +153,8 @@
           <th>Quantity</th>
           <th>Avg Price</th>
           <th>Current Price</th>
+          <th>Cost</th>
+          <th>Profit/Loss</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -209,6 +211,10 @@
     <div class="totals">
       <h3>Total USD Value of All Tokens</h3>
       <p id="totalUsdValue">$0.00</p>
+
+      <h3>Total Profit/Loss</h3>
+      <p id="totalProfitLossUsd">$0.00</p>
+      <p id="totalProfitLossPercentage">0.00%</p>
     </div>
   </div>
 
@@ -417,10 +423,18 @@
       priceTargetsTableBody.innerHTML = '';
 
       let totalUsdValue = 0;
+      let totalInvestment = 0;
+      let totalCurrentValue = 0;
 
       portfolio.forEach((crypto, index) => {
         const coinGeckoId = cryptoIdMap[crypto.name];
         const currentPrice = prices[coinGeckoId]?.usd || 0;
+
+        // Calculate cost, profit/loss, and USD value
+        const cost = crypto.avgPrice * crypto.quantity;
+        const usdValue = currentPrice * crypto.quantity;
+        const profitLossUSD = usdValue - cost;
+        const profitLossPercentage = ((currentPrice - crypto.avgPrice) / crypto.avgPrice) * 100;
 
         // Portfolio Table
         const portfolioRow = `
@@ -429,6 +443,10 @@
             <td>${crypto.quantity}</td>
             <td>$${crypto.avgPrice.toFixed(6)}</td>
             <td>$${currentPrice}</td>
+            <td>$${cost.toFixed(2)}</td>
+            <td class="${profitLossUSD >= 0 ? 'profit-positive' : 'profit-negative'}">
+              $${profitLossUSD.toFixed(2)} (${profitLossPercentage.toFixed(2)}%)
+            </td>
             <td class="actions">
               <button onclick="editCrypto(${index})">Edit</button>
               <button onclick="deleteCrypto(${index})">Delete</button>
@@ -438,9 +456,6 @@
         portfolioTableBody.innerHTML += portfolioRow;
 
         // USD Value Table
-        const usdValue = crypto.avgPrice * crypto.quantity;
-        totalUsdValue += usdValue;
-
         const usdValueRow = `
           <tr>
             <td>${crypto.name.toUpperCase()}</td>
@@ -474,10 +489,25 @@
           </tr>
         `;
         priceTargetsTableBody.innerHTML += priceTargetsRow;
+
+        // Update totals
+        totalUsdValue += usdValue;
+        totalInvestment += cost;
+        totalCurrentValue += usdValue;
       });
+
+      // Calculate total profit/loss
+      const totalProfitLossUsd = totalCurrentValue - totalInvestment;
+      const totalProfitLossPercentage = ((totalCurrentValue - totalInvestment) / totalInvestment) * 100;
 
       // Update Totals
       document.getElementById('totalUsdValue').textContent = `$${totalUsdValue.toFixed(2)}`;
+      document.getElementById('totalProfitLossUsd').textContent = `$${totalProfitLossUsd.toFixed(2)}`;
+      document.getElementById('totalProfitLossPercentage').textContent = `${totalProfitLossPercentage.toFixed(2)}%`;
+
+      // Color coding for total profit/loss
+      document.getElementById('totalProfitLossUsd').className = totalProfitLossUsd >= 0 ? 'profit-positive' : 'profit-negative';
+      document.getElementById('totalProfitLossPercentage').className = totalProfitLossPercentage >= 0 ? 'profit-positive' : 'profit-negative';
 
       // Update charts
       updateCharts();
