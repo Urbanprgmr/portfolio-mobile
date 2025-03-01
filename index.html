@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crypto Portfolio Manager</title>
   <style>
-    /* Smooth Gradient Background */
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
@@ -214,6 +213,14 @@
       updatePortfolio();
     }
 
+    function editCrypto(index) {
+      const crypto = portfolio[index];
+      document.getElementById('cryptoName').value = crypto.name;
+      document.getElementById('avgPrice').value = crypto.avgPrice;
+      document.getElementById('quantity').value = crypto.quantity;
+      portfolio.splice(index, 1);
+    }
+
     async function updatePortfolio() {
       await fetchPrices();
       document.getElementById('portfolioTable').innerHTML = "";
@@ -237,7 +244,10 @@
             <td>$${currentPrice.toFixed(2)}</td>
             <td>$${value.toFixed(2)}</td>
             <td class="${profit >= 0 ? 'profit-positive' : 'profit-negative'}">$${profit.toFixed(2)}</td>
-            <td><button onclick="deleteCrypto(${index})">Delete</button></td>
+            <td>
+              <button onclick="editCrypto(${index})">Edit</button>
+              <button onclick="deleteCrypto(${index})">Delete</button>
+            </td>
           </tr>
         `;
       });
