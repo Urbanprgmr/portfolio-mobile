@@ -23,12 +23,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Populate the crypto select dropdown
     function populateCryptoSelect(cryptos) {
+        cryptoSelect.innerHTML = "<option value=''>Select a Crypto</option>";
         cryptos.forEach(crypto => {
             const option = document.createElement("option");
             option.value = crypto.id;
             option.textContent = `${crypto.name} (${crypto.symbol.toUpperCase()})`;
             cryptoSelect.appendChild(option);
         });
+    }
+
+    // Filter cryptos based on search input
+    function filterCryptos() {
+        const searchTerm = cryptoSearch.value.toLowerCase();
+        const filteredCryptos = allCryptos.filter(crypto =>
+            crypto.name.toLowerCase().includes(searchTerm) || crypto.symbol.toLowerCase().includes(searchTerm)
+        );
+        populateCryptoSelect(filteredCryptos);
     }
 
     // Add crypto to portfolio
