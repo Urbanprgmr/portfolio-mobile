@@ -141,9 +141,6 @@
       </select>
       <input type="number" step="0.000001" id="avgPrice" placeholder="Average Price" required>
       <input type="number" step="0.000001" id="quantity" placeholder="Quantity" required>
-      <input type="number" step="0.000001" id="target1" placeholder="Target 1 (X)" required>
-      <input type="number" step="0.000001" id="target2" placeholder="Target 2 (X)" required>
-      <input type="number" step="0.000001" id="target3" placeholder="Target 3 (X)" required>
       <button type="submit" id="addCryptoButton">Add Crypto</button>
       <button type="button" id="updateCryptoButton" style="display: none;">Update Crypto</button>
     </div>
@@ -166,7 +163,29 @@
       </tbody>
     </table>
 
+    <h2>USD Value of Each Token</h2>
+    <table id="usdValueTable">
+      <thead>
+        <tr>
+          <th>Crypto</th>
+          <th>USD Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be added here dynamically -->
+      </tbody>
+    </table>
+
     <h2>Price Targets</h2>
+    <div class="form-group">
+      <label for="target1">Target 1 (X):</label>
+      <input type="number" id="target1" class="target-input" min="1" max="1000" value="2">
+      <label for="target2">Target 2 (X):</label>
+      <input type="number" id="target2" class="target-input" min="1" max="1000" value="5">
+      <label for="target3">Target 3 (X):</label>
+      <input type="number" id="target3" class="target-input" min="1" max="1000" value="10">
+      <button onclick="updateTargets()">Update Targets</button>
+    </div>
     <table id="priceTargetsTable">
       <thead>
         <tr>
@@ -251,6 +270,7 @@
 
     let portfolio = [];
     let editIndex = null;
+    let targetMultiples = [2, 5, 10]; // Default target multiples
 
     // Load portfolio from localStorage
     function loadPortfolio() {
@@ -276,43 +296,19 @@
     // Add crypto to portfolio
     document.getElementById('addCryptoButton').addEventListener('click', async (e) => {
       e.preventDefault();
-
-      // Get input values
       const cryptoName = document.getElementById('cryptoName').value.toLowerCase();
       const avgPrice = parseFloat(document.getElementById('avgPrice').value);
       const quantity = parseFloat(document.getElementById('quantity').value);
-      const target1 = parseFloat(document.getElementById('target1').value);
-      const target2 = parseFloat(document.getElementById('target2').value);
-      const target3 = parseFloat(document.getElementById('target3').value);
 
-      // Debugging: Log input values
-      console.log('Input Values:', { cryptoName, avgPrice, quantity, target1, target2, target3 });
-
-      // Validate input
       if (!cryptos.includes(cryptoName)) {
         alert('Crypto not supported. Please select a valid crypto from the list.');
         return;
       }
-      if (isNaN(avgPrice) || isNaN(quantity) || isNaN(target1) || isNaN(target2) || isNaN(target3)) {
-        alert('Please fill out all fields with valid numbers.');
-        return;
-      }
 
-      // Add crypto to portfolio
-      portfolio.push({ name: cryptoName, avgPrice, quantity, target1, target2, target3 });
-
-      // Debugging: Log the updated portfolio
-      console.log('Updated Portfolio:', portfolio);
-
-      // Clear form fields
+      portfolio.push({ name: cryptoName, avgPrice, quantity });
       document.getElementById('cryptoName').value = '';
       document.getElementById('avgPrice').value = '';
       document.getElementById('quantity').value = '';
-      document.getElementById('target1').value = '';
-      document.getElementById('target2').value = '';
-      document.getElementById('target3').value = '';
-
-      // Save and update portfolio
       savePortfolio();
       updatePortfolio();
     });
@@ -323,22 +319,16 @@
       const cryptoName = document.getElementById('cryptoName').value.toLowerCase();
       const avgPrice = parseFloat(document.getElementById('avgPrice').value);
       const quantity = parseFloat(document.getElementById('quantity').value);
-      const target1 = parseFloat(document.getElementById('target1').value);
-      const target2 = parseFloat(document.getElementById('target2').value);
-      const target3 = parseFloat(document.getElementById('target3').value);
 
       if (!cryptos.includes(cryptoName)) {
         alert('Crypto not supported. Please select a valid crypto from the list.');
         return;
       }
 
-      portfolio[editIndex] = { name: cryptoName, avgPrice, quantity, target1, target2, target3 };
+      portfolio[editIndex] = { name: cryptoName, avgPrice, quantity };
       document.getElementById('cryptoName').value = '';
       document.getElementById('avgPrice').value = '';
       document.getElementById('quantity').value = '';
-      document.getElementById('target1').value = '';
-      document.getElementById('target2').value = '';
-      document.getElementById('target3').value = '';
       document.getElementById('addCryptoButton').style.display = 'inline-block';
       document.getElementById('updateCryptoButton').style.display = 'none';
       editIndex = null;
@@ -359,12 +349,19 @@
       document.getElementById('cryptoName').value = crypto.name;
       document.getElementById('avgPrice').value = crypto.avgPrice;
       document.getElementById('quantity').value = crypto.quantity;
-      document.getElementById('target1').value = crypto.target1;
-      document.getElementById('target2').value = crypto.target2;
-      document.getElementById('target3').value = crypto.target3;
       document.getElementById('addCryptoButton').style.display = 'none';
       document.getElementById('updateCryptoButton').style.display = 'inline-block';
       editIndex = index;
+    }
+
+    // Update target multiples
+    function updateTargets() {
+      targetMultiples = [
+        parseInt(document.getElementById('target1').value),
+        parseInt(document.getElementById('target2').value),
+        parseInt(document.getElementById('target3').value)
+      ];
+      updatePortfolio();
     }
 
     // Function to update charts
@@ -471,15 +468,15 @@
         usdValueTableBody.innerHTML += usdValueRow;
 
         // Price Targets Table
-        const target1Price = crypto.avgPrice * crypto.target1;
+        const target1Price = crypto.avgPrice * targetMultiples[0];
         const target1ProfitUSD = (target1Price - crypto.avgPrice) * crypto.quantity;
         const target1ProfitPercentage = ((target1Price - crypto.avgPrice) / crypto.avgPrice) * 100;
 
-        const target2Price = crypto.avgPrice * crypto.target2;
+        const target2Price = crypto.avgPrice * targetMultiples[1];
         const target2ProfitUSD = (target2Price - crypto.avgPrice) * crypto.quantity;
         const target2ProfitPercentage = ((target2Price - crypto.avgPrice) / crypto.avgPrice) * 100;
 
-        const target3Price = crypto.avgPrice * crypto.target3;
+        const target3Price = crypto.avgPrice * targetMultiples[2];
         const target3ProfitUSD = (target3Price - crypto.avgPrice) * crypto.quantity;
         const target3ProfitPercentage = ((target3Price - crypto.avgPrice) / crypto.avgPrice) * 100;
 
