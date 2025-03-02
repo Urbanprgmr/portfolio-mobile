@@ -1,156 +1,71 @@
-/* styles.css */
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #1e1e2f;
-    color: #ffffff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Portfolio Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <h1>Crypto Portfolio Manager</h1>
+        </header>
 
-.container {
-    width: 100%;
-    max-width: 1200px;
-    background: #2a2a40;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-}
+        <!-- Add Crypto Section -->
+        <section class="add-crypto">
+            <h2>Add Crypto</h2>
+            <div class="form">
+                <select id="cryptoSelect">
+                    <option value="">Select a Crypto</option>
+                    <option value="bitcoin">Bitcoin (BTC)</option>
+                    <option value="ethereum">Ethereum (ETH)</option>
+                    <option value="binancecoin">Binance Coin (BNB)</option>
+                    <option value="cardano">Cardano (ADA)</option>
+                    <option value="solana">Solana (SOL)</option>
+                    <option value="ripple">Ripple (XRP)</option>
+                    <option value="polkadot">Polkadot (DOT)</option>
+                    <option value="dogecoin">Dogecoin (DOGE)</option>
+                </select>
+                <input type="number" id="cryptoQuantity" placeholder="Quantity">
+                <input type="number" id="cryptoCost" placeholder="Average Cost (USD)">
+                <button id="addCryptoBtn">Add Crypto</button>
+            </div>
+        </section>
 
-header {
-    text-align: center;
-    margin-bottom: 20px;
-}
+        <!-- Portfolio Section -->
+        <section class="portfolio">
+            <h2>Portfolio</h2>
+            <table id="portfolioTable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Symbol</th>
+                        <th>Quantity</th>
+                        <th>Avg Cost</th>
+                        <th>Current Price</th>
+                        <th>Total Value</th>
+                        <th>Profit/Loss</th>
+                        <th>Price Targets</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rows will be added dynamically -->
+                </tbody>
+            </table>
+        </section>
 
-h1 {
-    font-size: 28px;
-    margin-bottom: 20px;
-    color: #00d1b2;
-}
+        <!-- Price Targets Section -->
+        <section class="price-targets">
+            <h2>Price Targets</h2>
+            <div id="priceTargetsContainer">
+                <!-- Price targets will be added dynamically -->
+            </div>
+        </section>
+    </div>
 
-h2 {
-    font-size: 24px;
-    margin-bottom: 15px;
-    color: #00d1b2;
-}
-
-.add-crypto, .portfolio, .price-targets {
-    margin-bottom: 30px;
-}
-
-.form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-}
-
-.form input, .form select {
-    padding: 10px;
-    border: 1px solid #444;
-    border-radius: 5px;
-    font-size: 16px;
-    background: #333;
-    color: #fff;
-    width: calc(25% - 10px);
-}
-
-.form button {
-    padding: 10px 20px;
-    background-color: #00d1b2;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.form button:hover {
-    background-color: #009e87;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-th, td {
-    padding: 12px;
-    text-align: center;
-    border-bottom: 1px solid #444;
-}
-
-th {
-    background-color: #00d1b2;
-    color: white;
-}
-
-tr:hover {
-    background-color: #3a3a50;
-}
-
-.editBtn, .deleteBtn {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    margin: 2px;
-}
-
-.editBtn {
-    background-color: #3273dc;
-    color: white;
-}
-
-.editBtn:hover {
-    background-color: #276cda;
-}
-
-.deleteBtn {
-    background-color: #ff3860;
-    color: white;
-}
-
-.deleteBtn:hover {
-    background-color: #ff1c4a;
-}
-
-.price-targets {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.price-target {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.price-target input {
-    width: 80px;
-    padding: 5px;
-    border: 1px solid #444;
-    border-radius: 5px;
-    background: #333;
-    color: #fff;
-}
-
-@media (max-width: 768px) {
-    .form input, .form select {
-        width: calc(50% - 10px);
-    }
-
-    table {
-        font-size: 14px;
-    }
-
-    th, td {
-        padding: 8px;
-    }
-}
+    <script src="script.js"></script>
+</body>
+</html>
