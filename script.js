@@ -1,6 +1,5 @@
 // script.js
 document.addEventListener("DOMContentLoaded", function () {
-    const cryptoSearch = document.getElementById("cryptoSearch");
     const cryptoSelect = document.getElementById("cryptoSelect");
     const cryptoQuantity = document.getElementById("cryptoQuantity");
     const cryptoCost = document.getElementById("cryptoCost");
@@ -8,38 +7,17 @@ document.addEventListener("DOMContentLoaded", function () {
     const portfolioTable = document.getElementById("portfolioTable").getElementsByTagName("tbody")[0];
     const priceTargetsContainer = document.getElementById("priceTargetsContainer");
 
-    let allCryptos = [];
-
-    // Fetch all cryptocurrencies from CoinGecko API
-    async function fetchAllCryptos() {
-        try {
-            const response = await fetch("https://api.coingecko.com/api/v3/coins/list");
-            allCryptos = await response.json();
-            populateCryptoSelect(allCryptos);
-        } catch (error) {
-            console.error("Error fetching cryptos:", error);
-        }
-    }
-
-    // Populate the crypto select dropdown
-    function populateCryptoSelect(cryptos) {
-        cryptoSelect.innerHTML = "<option value=''>Select a Crypto</option>";
-        cryptos.forEach(crypto => {
-            const option = document.createElement("option");
-            option.value = crypto.id;
-            option.textContent = `${crypto.name} (${crypto.symbol.toUpperCase()})`;
-            cryptoSelect.appendChild(option);
-        });
-    }
-
-    // Filter cryptos based on search input
-    function filterCryptos() {
-        const searchTerm = cryptoSearch.value.toLowerCase();
-        const filteredCryptos = allCryptos.filter(crypto =>
-            crypto.name.toLowerCase().includes(searchTerm) || crypto.symbol.toLowerCase().includes(searchTerm)
-        );
-        populateCryptoSelect(filteredCryptos);
-    }
+    // Predefined list of popular cryptocurrencies
+    const popularCryptos = [
+        { id: "bitcoin", name: "Bitcoin", symbol: "BTC" },
+        { id: "ethereum", name: "Ethereum", symbol: "ETH" },
+        { id: "binancecoin", name: "Binance Coin", symbol: "BNB" },
+        { id: "cardano", name: "Cardano", symbol: "ADA" },
+        { id: "solana", name: "Solana", symbol: "SOL" },
+        { id: "ripple", name: "Ripple", symbol: "XRP" },
+        { id: "polkadot", name: "Polkadot", symbol: "DOT" },
+        { id: "dogecoin", name: "Dogecoin", symbol: "DOGE" }
+    ];
 
     // Add crypto to portfolio
     addCryptoBtn.addEventListener("click", function () {
@@ -48,8 +26,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const cost = parseFloat(cryptoCost.value);
 
         if (cryptoId && quantity && cost) {
-            const crypto = allCryptos.find(c => c.id === cryptoId);
-            addCryptoToPortfolio(crypto.name, crypto.symbol.toUpperCase(), quantity, cost);
+            const crypto = popularCryptos.find(c => c.id === cryptoId);
+            addCryptoToPortfolio(crypto.name, crypto.symbol, quantity, cost);
             cryptoSelect.value = "";
             cryptoQuantity.value = "";
             cryptoCost.value = "";
@@ -206,6 +184,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Initialize
-    fetchAllCryptos();
     loadPortfolio();
 });
